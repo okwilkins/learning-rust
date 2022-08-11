@@ -10,21 +10,18 @@ fn main() {
     println!("Number of floors Santa must climb: {floor_num}");
     match first_basement_char {
         None => println!("Santa did not reach the basement!"),
-        Some(char_loc) => println!("Santa reached the basement at character: {char_loc}")
+        Some(char_loc) => println!("Santa reached the basement at character: {char_loc}"),
     };
 }
 
 fn print_usage() {
-    eprintln!(
-        "{} - ",
-        "santa-floor-parser".green()
-    );
+    eprintln!("{} - ", "santa-floor-parser".green());
     eprintln!("Usage: santa-floor-parser <INPUT>");
 }
 
 #[derive(Debug)]
 struct Arguments {
-    input: String
+    input: String,
 }
 
 fn parse_args() -> Arguments {
@@ -39,7 +36,9 @@ fn parse_args() -> Arguments {
         );
     }
 
-    Arguments { input: args[0].clone() }
+    Arguments {
+        input: args[0].clone(),
+    }
 }
 
 /// Santa is trying to deliver presents in a large apartment building,
@@ -55,7 +54,6 @@ fn calculate_floor(input: &str) -> isize {
 
     up_floor_count - down_floor_count
 }
-
 
 /// Finds the position of the first character that causes him to enter the basement (floor -1).
 /// The first character in the instructions has position 1,
