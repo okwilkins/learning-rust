@@ -3,7 +3,7 @@ use text_colorizer::Colorize;
 
 fn main() {
     let args = parse_args();
-    let floor_num = parse_input(&args.input as &str);
+    let floor_num = calculate_floor(&args.input as &str);
     eprintln!("Number of floors Santa must climb: {}", floor_num);
 }
 
@@ -35,7 +35,14 @@ fn parse_args() -> Arguments {
     Arguments { input: args[0].clone() }
 }
 
-fn parse_input(input: &str) -> isize {
+/// Santa is trying to deliver presents in a large apartment building,
+/// but he can't find the right floor - the directions he got are a little confusing.
+/// He starts on the ground floor (floor 0) and then follows the
+/// instructions one character at a time.
+///
+/// An opening parenthesis, (, means he should go up one floor,
+/// and a closing parenthesis, ), means he should go down one floor.
+fn calculate_floor(input: &str) -> isize {
     let up_floor_count: isize = input.matches('(').count() as isize;
     let down_floor_count: isize = input.matches(')').count() as isize;
 
@@ -43,18 +50,18 @@ fn parse_input(input: &str) -> isize {
 }
 
 #[test]
-fn test_parse_input() {
-    assert_eq!(parse_input("(())"), 0);
-    assert_eq!(parse_input("()()"), 0);
+fn test_calculate_floor() {
+    assert_eq!(calculate_floor("(())"), 0);
+    assert_eq!(calculate_floor("()()"), 0);
 
-    assert_eq!(parse_input("((("), 3);
-    assert_eq!(parse_input("(()(()("), 3);
+    assert_eq!(calculate_floor("((("), 3);
+    assert_eq!(calculate_floor("(()(()("), 3);
 
-    assert_eq!(parse_input("))((((("), 3);
+    assert_eq!(calculate_floor("))((((("), 3);
 
-    assert_eq!(parse_input("())"), -1);
-    assert_eq!(parse_input("))("), -1);
+    assert_eq!(calculate_floor("())"), -1);
+    assert_eq!(calculate_floor("))("), -1);
 
-    assert_eq!(parse_input(")))"), -3);
-    assert_eq!(parse_input(")())())"), -3);
+    assert_eq!(calculate_floor(")))"), -3);
+    assert_eq!(calculate_floor(")())())"), -3);
 }
