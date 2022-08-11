@@ -1,4 +1,4 @@
-# [Day 1  (puzzle link)](https://adventofcode.com/2015/day/1))
+# [Day 1  (puzzle link)](https://adventofcode.com/2015/day/1)
 The next puzzle in our Revival of Code is now released!
 
 We're revisiting an old Advent of Code event at a slower pace. To participate, check out the linked puzzle then come join us in this thread when you've solved it or need help!
