@@ -26,7 +26,8 @@ fn main() {
     );
 
     {
-        let mut combined_locations = [santa.locations.clone(), robo_santa.locations.clone()].concat();
+        let mut combined_locations =
+            [santa.locations.clone(), robo_santa.locations.clone()].concat();
         combined_locations.sort_by_key(|l| l.x);
         combined_locations.sort_by_key(|l| l.y);
         combined_locations.dedup();
