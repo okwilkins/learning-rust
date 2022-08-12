@@ -3,8 +3,9 @@ use std::env;
 fn main() {
     let args = parse_args();
 
-    let wrapping_order = calculate_wrapping_order(&args.input);
-    println!("The elves wrapping order is: {wrapping_order} sq ft");
+    let (wrapping_order, ribbon_order) = calculate_wrapping_order(&args.input);
+    println!("The elves' wrapping order is: {wrapping_order:?} sq ft");
+    println!("The elves' ribbon order is: {ribbon_order:?} sq ft");
 }
 
 #[derive(Debug, PartialEq)]
@@ -19,17 +20,22 @@ struct Arguments {
     input: String,
 }
 
-fn calculate_wrapping_order(input: &str) -> usize {
-    let mut order_size: usize = 0;
+fn calculate_wrapping_order(input: &str) -> (usize, usize) {
+    let mut wrapping_order_size: usize = 0;
+    let mut ribbon_order_size: usize = 0;
 
     for dimensions in input.split('\n') {
-        order_size += match parse_wrapping_dimensions(dimensions) {
+        wrapping_order_size += match parse_wrapping_dimensions(dimensions) {
             None => 0,
             Some(x) => calculate_wrapping_footage(x),
         };
+        ribbon_order_size += match parse_wrapping_dimensions(dimensions) {
+            None => 0,
+            Some(x) => calculate_ribbon_footage(x),
+        };
     }
 
-    order_size
+    (wrapping_order_size, ribbon_order_size)
 }
 
 fn calculate_wrapping_footage(input: PresentDimensions) -> usize {
@@ -37,7 +43,13 @@ fn calculate_wrapping_footage(input: PresentDimensions) -> usize {
     let area_2 = input.w * input.h;
     let area_3 = input.h * input.l;
 
-    (2 * area_1) + (2 * area_2) + (2 * area_3) + vec![area_1, area_2, area_3].iter().min().unwrap()
+    (2 * area_1) + (2 * area_2) + (2 * area_3) + [area_1, area_2, area_3].iter().min().unwrap()
+}
+
+fn calculate_ribbon_footage(input: PresentDimensions) -> usize {
+    let mut sorted_inputs = [input.l, input.w, input.h];
+    sorted_inputs.sort();
+    2 * sorted_inputs[0] + 2 * sorted_inputs[1] + (input.l * input.w * input.h)
 }
 
 fn parse_wrapping_dimensions(input: &str) -> Option<PresentDimensions> {
@@ -45,10 +57,12 @@ fn parse_wrapping_dimensions(input: &str) -> Option<PresentDimensions> {
         .split('x')
         .map({
             |x| match x.trim().parse::<usize>() {
-                Ok(s) => s,
-                Err(_) => 0,
+                Ok(s) => Some(s),
+                Err(_) => None,
             }
         })
+        .filter(|x| x.is_some())
+        .map(|x| x.unwrap())
         .collect();
 
     if input_split.len() != 3 {
@@ -76,14 +90,14 @@ fn parse_args() -> Arguments {
 
 #[test]
 fn test_calculate_wrapping_footage() {
-    assert_eq!(
-        calculate_wrapping_footage(PresentDimensions { l: 2, w: 3, h: 4 }),
-        58
-    );
-    assert_eq!(
-        calculate_wrapping_footage(PresentDimensions { l: 1, w: 1, h: 10 }),
-        43
-    );
+    assert_eq!(calculate_wrapping_footage(PresentDimensions { l: 2, w: 3, h: 4 }), 58);
+    assert_eq!(calculate_wrapping_footage(PresentDimensions { l: 1, w: 1, h: 10 }), 43);
+}
+
+#[test]
+fn test_calculate_ribbon_footage() {
+    assert_eq!(calculate_ribbon_footage(PresentDimensions { l: 2, w: 3, h: 4 }), 34);
+    assert_eq!(calculate_ribbon_footage(PresentDimensions { l: 1, w: 1, h: 10 }), 14);
 }
 
 #[test]
@@ -103,18 +117,18 @@ fn test_parse_wrapping_dimensions() {
 
 #[test]
 fn test_calculate_wrapping_order() {
-    assert_eq!(calculate_wrapping_order("2x3x4"), 58);
-    assert_eq!(calculate_wrapping_order("1x1x10"), 43);
-    assert_eq!(calculate_wrapping_order("234"), 0);
-    assert_eq!(calculate_wrapping_order(""), 0);
-    assert_eq!(calculate_wrapping_order("2x34"), 0);
+    assert_eq!(calculate_wrapping_order("2x3x4"), (58, 34));
+    assert_eq!(calculate_wrapping_order("1x1x10"), (43, 14));
+    assert_eq!(calculate_wrapping_order("234"), (0, 0));
+    assert_eq!(calculate_wrapping_order(""), (0, 0));
+    assert_eq!(calculate_wrapping_order("2x34"), (0, 0));
     assert_eq!(
         calculate_wrapping_order(
             r#"2x3x4
             1x1x10
             "#
         ),
-        58 + 43
+        (58 + 43, 34 + 14)
     );
     assert_eq!(
         calculate_wrapping_order(
@@ -123,7 +137,7 @@ fn test_calculate_wrapping_order() {
             asdasd
             "#
         ),
-        58 + 43 + 0
+        (58 + 43 + 0, 34 + 14 + 0)
     );
     assert_eq!(
         calculate_wrapping_order(
@@ -131,7 +145,7 @@ fn test_calculate_wrapping_order() {
                 1x1x10
             "#
         ),
-        58 + 43
+        (58 + 43, 34 + 14)
     );
     assert_eq!(
         calculate_wrapping_order(
@@ -139,6 +153,21 @@ fn test_calculate_wrapping_order() {
                 1x1x10 2x3x4
             "#
         ),
-        58
+        (58 + 0, 34 + 0)
+    );
+    assert_eq!(
+        calculate_wrapping_order(
+            r#"2x3x4asdasd
+            "#
+        ),
+        (0, 0)
+    );
+    assert_eq!(
+        calculate_wrapping_order(
+            r#"2x3x4asdasd
+            1x1x10
+            "#
+        ),
+        (0 + 43, 0 + 14)
     );
 }
