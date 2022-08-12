@@ -90,14 +90,26 @@ fn parse_args() -> Arguments {
 
 #[test]
 fn test_calculate_wrapping_footage() {
-    assert_eq!(calculate_wrapping_footage(PresentDimensions { l: 2, w: 3, h: 4 }), 58);
-    assert_eq!(calculate_wrapping_footage(PresentDimensions { l: 1, w: 1, h: 10 }), 43);
+    assert_eq!(
+        calculate_wrapping_footage(PresentDimensions { l: 2, w: 3, h: 4 }),
+        58
+    );
+    assert_eq!(
+        calculate_wrapping_footage(PresentDimensions { l: 1, w: 1, h: 10 }),
+        43
+    );
 }
 
 #[test]
 fn test_calculate_ribbon_footage() {
-    assert_eq!(calculate_ribbon_footage(PresentDimensions { l: 2, w: 3, h: 4 }), 34);
-    assert_eq!(calculate_ribbon_footage(PresentDimensions { l: 1, w: 1, h: 10 }), 14);
+    assert_eq!(
+        calculate_ribbon_footage(PresentDimensions { l: 2, w: 3, h: 4 }),
+        34
+    );
+    assert_eq!(
+        calculate_ribbon_footage(PresentDimensions { l: 1, w: 1, h: 10 }),
+        14
+    );
 }
 
 #[test]
