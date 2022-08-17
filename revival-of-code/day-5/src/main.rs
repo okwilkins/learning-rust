@@ -11,7 +11,10 @@ fn main() {
     }
 
     println!("Number of nice texts: {}", num_nice_text);
-    println!("Number of nice texts (improved detection): {}", num_improved_nice_text);
+    println!(
+        "Number of nice texts (improved detection): {}",
+        num_improved_nice_text
+    );
 }
 
 #[derive(Debug)]
@@ -38,7 +41,7 @@ fn detect_nice_text(input: &str) -> bool {
         .map(|c| format!("{}{}", c as char, c as char))
         .collect::<Vec<_>>();
     let mut lower_alpha_match = false;
-    
+
     let vowels = vec!["a", "e", "u", "i", "o"];
     let mut vowels_count: usize = 0;
 
