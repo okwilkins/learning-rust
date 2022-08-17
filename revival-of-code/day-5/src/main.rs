@@ -1,18 +1,17 @@
-use regex::Regex;
 use std::fmt::Debug;
 
 fn main() {
     let args = parse_args();
     let mut num_nice_text: usize = 0;
+    let mut num_improved_nice_text: usize = 0;
 
     for arg_line in args.input.lines() {
-        let nice_text = detect_nice_text(arg_line);
-        if nice_text {
-            num_nice_text += nice_text as usize;
-        }
+        num_nice_text += detect_nice_text(arg_line) as usize;
+        num_improved_nice_text += improved_detect_nice_text(arg_line) as usize;
     }
 
-    println!("Number of nice texts: {}", num_nice_text)
+    println!("Number of nice texts: {}", num_nice_text);
+    println!("Number of nice texts (improved detection): {}", num_improved_nice_text);
 }
 
 #[derive(Debug)]
@@ -49,6 +48,7 @@ fn detect_nice_text(input: &str) -> bool {
     for lower_alpha in lower_alphas {
         if input.matches(lower_alpha.as_str()).count() >= 1 {
             lower_alpha_match = true;
+            break;
         }
     }
 
@@ -59,6 +59,7 @@ fn detect_nice_text(input: &str) -> bool {
     for bad_pattern in bad_patterns {
         if input.matches(bad_pattern).count() >= 1 {
             bad_match = true;
+            break;
         }
     }
 
@@ -66,11 +67,27 @@ fn detect_nice_text(input: &str) -> bool {
 }
 
 fn improved_detect_nice_text(input: &str) -> bool {
-    let good_re_1 = Regex::new(r"([a-zA-Z])\1").unwrap();
-    let good_re_2 = Regex::new(r"(\w*[aeuio]\w*){3,}").unwrap();
-    let bad_re = Regex::new(r"ab|cd|pq|xy").unwrap();
+    let mut one_letter_repeat = false;
+    let mut two_letter_repeat = false;
 
-    good_re_1.is_match(input) && good_re_2.is_match(input) && !bad_re.is_match(input)
+    for i in 0..input.len() - 2 {
+        if input.chars().nth(i) == input.chars().nth(i + 2) {
+            one_letter_repeat = true;
+            break;
+        }
+    }
+
+    for i in 0..input.len() - 3 {
+        let slice = &input[i..i + 2];
+        let comparison_slice = &input[i + 2..];
+
+        if comparison_slice.matches(slice).count() >= 1 {
+            two_letter_repeat = true;
+            break;
+        }
+    }
+
+    one_letter_repeat && two_letter_repeat
 }
 
 #[test]
@@ -80,4 +97,12 @@ fn test_detect_nice_text() {
     assert_eq!(detect_nice_text("jchzalrnumimnmhp"), false);
     assert_eq!(detect_nice_text("haegwjzuvuyypxyu"), false);
     assert_eq!(detect_nice_text("dvszwmarrgswjxmb"), false);
+}
+
+#[test]
+fn test_improved_detect_nice_text() {
+    assert_eq!(improved_detect_nice_text("qjhvhtzxzqqjkmpb"), true);
+    assert_eq!(improved_detect_nice_text("xxyxx"), true);
+    assert_eq!(improved_detect_nice_text("uurcxstgmygtbstg"), false);
+    assert_eq!(improved_detect_nice_text("ieodomkazucvgmuy"), false);
 }
