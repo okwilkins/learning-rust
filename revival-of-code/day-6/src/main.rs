@@ -39,15 +39,16 @@ struct Point {
 
 #[derive(Debug, Clone)]
 struct Light {
-    on: bool,
+    brightness: usize,
 }
 
 impl Light {
     fn command_light(&mut self, command: &LightCommand) {
-        match command {
-            LightCommand::TurnOn => self.on = true,
-            LightCommand::TurnOff => self.on = false,
-            LightCommand::Toggle => self.on = !self.on,
+        match (command, self.brightness) {
+            (LightCommand::TurnOn, _) => self.brightness += 1,
+            (LightCommand::TurnOff, b) if b > 0 => self.brightness -= 1,
+            (LightCommand::Toggle, _) => self.brightness += 2,
+            (_, _) => (),
         }
     }
 }
@@ -64,7 +65,7 @@ impl Grid {
         Grid {
             width,
             height,
-            lights: vec![vec![Light { on: false }; width]; height],
+            lights: vec![vec![Light { brightness: 0 }; width]; height],
         }
     }
 
@@ -74,23 +75,35 @@ impl Grid {
         point_to: Point,
         command: LightCommand,
     ) {
-        for y in point_from.y..point_to.y + 1{
+        for y in point_from.y..point_to.y + 1 {
             for x in point_from.x..point_to.x + 1 {
                 self.lights[x][y].command_light(&command);
             }
         }
     }
 
-    fn get_num_lights_on(self) -> usize {
+    fn get_num_lights_on(&self) -> usize {
         let mut num_lights_on: usize = 0;
 
         for y in 0..self.height {
             for x in 0..self.width {
-                num_lights_on += self.lights[x][y].on as usize;
+                num_lights_on += (self.lights[x][y].brightness > 0) as usize;
             }
         }
 
         num_lights_on
+    }
+
+    fn get_total_brightness(&self) -> usize {
+        let mut total_brightness: usize = 0;
+
+        for y in 0..self.height {
+            for x in 0..self.width {
+                total_brightness += self.lights[x][y].brightness;
+            }
+        }
+
+        total_brightness
     }
 }
 
@@ -112,18 +125,18 @@ fn parse_input(input: String) -> Input {
         command: LightCommand::from_str(&caps[1]).unwrap(),
         point_from: Point {
             x: usize::from_str(&caps[2]).unwrap(),
-            y:  usize::from_str(&caps[3]).unwrap(),
+            y: usize::from_str(&caps[3]).unwrap(),
         },
         point_to: Point {
-            x:  usize::from_str(&caps[4]).unwrap(),
-            y:  usize::from_str(&caps[5]).unwrap(),
+            x: usize::from_str(&caps[4]).unwrap(),
+            y: usize::from_str(&caps[5]).unwrap(),
         },
     }
 }
 
 #[derive(Debug)]
 struct Arguments {
-    input: String
+    input: String,
 }
 
 fn parse_args() -> Arguments {
@@ -147,5 +160,9 @@ fn main() {
         grid.command_lights_in_grid(input.point_from, input.point_to, input.command);
     }
 
-    println!("{}", grid.get_num_lights_on())
+    println!("Total number of lights on: {}", grid.get_num_lights_on());
+    println!(
+        "Total brightness of lights on: {}",
+        grid.get_total_brightness()
+    );
 }
